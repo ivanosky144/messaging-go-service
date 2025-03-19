@@ -6,6 +6,7 @@ import (
 
 	router "github.com/messaging-go-service/api"
 	"github.com/messaging-go-service/config"
+	"github.com/messaging-go-service/internal/service"
 	"gorm.io/gorm"
 )
 
@@ -30,10 +31,14 @@ func main() {
 		log.Fatal("Database connection is nil")
 	}
 
+	go service.RecentHub.Run()
+
 	router := router.Routes(db)
 	protectedRoutes := EnableCors(router)
 
 	http.Handle("/", protectedRoutes)
+	http.HandleFunc("/ws", service.HandleWebSocket)
+
 	log.Println("Server is listening on port 3200")
 	log.Fatal(http.ListenAndServe("0.0.0.0:3200", nil))
 }
